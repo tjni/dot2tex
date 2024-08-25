@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Graphviz dot language parser.
 
 This parser is derived from the the parser distributed with the pydot module.
@@ -65,10 +64,7 @@ def needs_quotes(s):
             ##                if not res:
             ##                    res = id_re_with_port.match(s)
 
-    if not res:
-        return True
-
-    return False
+    return not res
 
 
 def quote_if_necessary(s):
@@ -84,9 +80,8 @@ def quote_if_necessary(s):
 
 def flatten(lst):
     for elem in lst:
-        if type(elem) in (tuple, list):
-            for i in flatten(elem):
-                yield i
+        if isinstance(elem, (tuple, list)):
+            yield from flatten(elem)
         else:
             yield elem
 
@@ -121,7 +116,7 @@ def nsplit(seq, n=2):
     >>> nsplit('aabbcc',n=4)
     [('a', 'a', 'b', 'b')]
     """
-    return [xy for xy in zip(*[iter(seq)] * n)]
+    return list(zip(*[iter(seq)] * n))
 
 
 # The following function is from the pydot project
@@ -286,7 +281,7 @@ SET_DEF_GRAPH_ATTR = 'set_def_graph_attr'
 SET_GRAPH_ATTR = 'set_graph_attr'
 
 
-class DotDataParser(object):
+class DotDataParser:
     """Container class for parsing Graphviz dot data"""
 
     def __init__(self):
@@ -426,8 +421,8 @@ class DotDataParser(object):
         closer = '>'
         try:
             html_text = pyparsing.nestedExpr(opener, closer,
-                                             ((CharsNotIn(
-                                                     opener + closer).setParseAction(lambda t: t[0]))
+                                             (CharsNotIn(
+                                                     opener + closer).setParseAction(lambda t: t[0])
                                               )).setParseAction(parse_html)
         except:
             log.debug('nestedExpr not available.')
@@ -449,11 +444,11 @@ class DotDataParser(object):
 
         port_angle = (at + ID).setName("port_angle")
 
-        port_location = ((OneOrMore(Group(colon + ID)) |
-                          Group(colon + lparen + ID + comma + ID + rparen))).setName("port_location")
+        port_location = (OneOrMore(Group(colon + ID)) |
+                          Group(colon + lparen + ID + comma + ID + rparen)).setName("port_location")
 
-        port = Combine((Group(port_location + Optional(port_angle)) |
-                        Group(port_angle + Optional(port_location)))).setName("port")
+        port = Combine(Group(port_location + Optional(port_angle)) |
+                        Group(port_angle + Optional(port_location))).setName("port")
 
         node_id = (ID + Optional(port))
         a_list = OneOrMore(ID + Optional(equals + righthand_id) +
@@ -627,7 +622,7 @@ class DotDataParser(object):
             return None
 
 
-class DotDefaultAttr(object):
+class DotDefaultAttr:
     def __init__(self, element_type, **kwds):
         self.element_type = element_type
         self.attr = kwds
@@ -647,7 +642,7 @@ class DotParsingException(Exception):
     """Base class for dotparsing exceptions."""
 
 
-class DotNode(object):
+class DotNode:
     """Class representing a DOT node"""
 
     def __init__(self, name, **kwds):
@@ -693,7 +688,7 @@ class DotNode(object):
             raise AttributeError
 
 
-class DotGraph(object):
+class DotGraph:
     """Class representing a DOT graph"""
 
     def __init__(self, name='G', strict=True, directed=False, **kwds):
@@ -1003,7 +998,7 @@ class DotGraph(object):
                 'subgraph', self.get_name(), subgraphstr, attrstr, nodestr, edgestr, padding)
 
 
-class DotEdge(object):
+class DotEdge:
     """Class representing a DOT edge"""
 
     def __init__(self, src, dst, directed=False, src_port="", dst_port="", **kwds):

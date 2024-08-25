@@ -216,7 +216,7 @@ def get_drawobj_lblstyle(drawobj, extra_styles=None):
     ])) or None
 
 
-class DotConvBase(object):
+class DotConvBase:
     """Dot2TeX converter base"""
 
     def __init__(self, options=None):
@@ -1024,7 +1024,7 @@ class TeXDimProc:
             s += "\end{preview}%\n"
         with open(self.tempfilename, 'w') as f:
             f.write(self.template.replace('<<preproccode>>', s))
-        with open(self.tempfilename, 'r') as f:
+        with open(self.tempfilename) as f:
             s = f.read()
         log.debug('Code written to %s\n' % self.tempfilename + s)
         self.parse_log_file()
@@ -1063,7 +1063,7 @@ class TeXDimProc:
         p.kill()
         p.wait()
 
-        with open(logfilename, 'r') as f:
+        with open(logfilename) as f:
             logdata = f.read()
         log.debug('Logfile from LaTeX run: \n' + logdata)
         os.chdir(tmpdir)
