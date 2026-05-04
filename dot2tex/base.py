@@ -35,18 +35,14 @@ def create_xdot(dotdata, prog='dot', options=''):
 
     tmp_fd, tmp_name = tempfile.mkstemp()
     os.close(tmp_fd)
-    if os.sys.version_info[0] >= 3:
-        with open(tmp_name, 'w', encoding="utf8") as f:
-            f.write(dotdata)
-    else:
-        with open(tmp_name, 'w') as f:
-            f.write(dotdata)
+    with open(tmp_name, 'w', encoding="utf8") as f:
+        f.write(dotdata)
     output_format = 'xdot'
     progpath = '"%s"' % progs[prog].strip()
     cmd = progpath + ' -T' + output_format + ' ' + options + ' ' + tmp_name
     log.debug('Creating xdot data with: %s', cmd)
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=(sys.platform != 'win32'), text=True, encoding='utf8')
-    (stdout, stderr) = (p.stdout, p.stderr)
+    stdout, stderr = (p.stdout, p.stderr)
     try:
         data = stdout.read()
     finally:
@@ -102,7 +98,7 @@ def parse_drawstring(drawstring):
         return didx, (c, points[0], points[1], points[2], points[3])
 
     def doPLB(c, s):
-        """Parse polygon, polyline og B-spline"""
+        """Parse polygon, polyline or B-spline"""
         # P n x1 y1 ... xn yn  Filled polygon using the given n points
         # p n x1 y1 ... xn yn  Unfilled polygon using the given n points
         # L n x1 y1 ... xn yn  Polyline using the given n points
@@ -236,16 +232,13 @@ class DotConvBase(object):
             self.template = options['template']
 
         self.options = options or {}
-        if options.get('texpreproc') or options.get('autosize'):
-            self.dopreproc = True
-        else:
-            self.dopreproc = False
+        self.dopreproc = options.get('texpreproc') or options.get('autosize')
 
     def load_template(self, templatefile):
         try:
             with open(templatefile) as f:
                 self.template = f.read()
-        except:
+        except FileNotFoundError:
             pass
 
     def convert_file(self, filename):
@@ -428,13 +421,13 @@ class DotConvBase(object):
                     if not use_drawstring_pos:
                         if texlbl_name == "tailtexlbl":
                             pos = drawobj.attr.get('tail_lp') or \
-                                  drawobj.attr.get('pos')
+                                drawobj.attr.get('pos')
                         elif texlbl_name == "headtexlbl":
                             pos = drawobj.attr.get('head_lp') or \
-                                  drawobj.attr.get('pos')
+                                drawobj.attr.get('pos')
                         else:
                             pos = drawobj.attr.get('lp') or \
-                                  drawobj.attr.get('pos')
+                                drawobj.attr.get('pos')
 
                         if pos:
                             coord = pos.split(',')
@@ -482,12 +475,12 @@ class DotConvBase(object):
         #   <point>  :: <x> ',' <y>
         #   <triple> :: <point> <point> <point>
         #   <endp>   :: "e" "," <x> "," <y>
-        ##        spline ( ';' spline )*
-        ##where spline  =   (endp)? (startp)? point (triple)+
-        ##and triple    =   point point point
-        ##and endp  =   "e,%d,%d"
-        ##and startp    =   "s,%d,%d"
-        ##If a spline has points p1 p2 p3 ... pn, (n = 1 (mod 3)), the points correspond to the control points of a B-spline from p1 to pn. If startp is given, it touches one node of the edge, and the arrowhead goes from p1 to startp. If startp is not given, p1 touches a node. Similarly for pn and endp.
+        # #        spline ( ';' spline )*
+        # # where spline  =   (endp)? (startp)? point (triple)+
+        # # and triple    =   point point point
+        # # and endp  =   "e,%d,%d"
+        # # and startp    =   "s,%d,%d"
+        # # If a spline has points p1 p2 p3 ... pn, (n = 1 (mod 3)), the points correspond to the control points of a B-spline from p1 to pn. If startp is given, it touches one node of the edge, and the arrowhead goes from p1 to startp. If startp is not given, p1 touches a node. Similarly for pn and endp.
         pos = edge.attr.get('pos')
         if pos:
             segments = pos.split(';')
@@ -540,7 +533,7 @@ class DotConvBase(object):
             # Note that the order of the draw strings should be the same
             # as in the xdot output.
             drawstring = general_draw_string + " " + head_arrow_string + " " + tail_arrow_string \
-                         + " " + label_string
+                + " " + label_string
             drawop, stat = parse_drawstring(drawstring)
             if not drawstring.strip():
                 continue
@@ -583,11 +576,11 @@ class DotConvBase(object):
         # the graph attribute will be used. Command line option should have
         # precedence.
         self.options['alignstr'] = self.options.get('alignstr', '') \
-                                   or getattr(self.main_graph, 'd2talignstr', '')
+            or getattr(self.main_graph, 'd2talignstr', '')
 
         # Todo: bad!
         self.options['valignmode'] = getattr(self.main_graph, 'd2tvalignmode', '') \
-                                     or self.options.get('valignmode', 'center')
+            or self.options.get('valignmode', 'center')
 
     def convert(self, dotdata):
         # parse data processed by dot.
@@ -713,11 +706,11 @@ class DotConvBase(object):
                        or getattr(self.main_graph, 'd2tdocpreamble', ''))
         variables['<<docpreamble>>'] = docpreamble
         variables['<<figpreamble>>'] = self.options.get('figpreamble', '') \
-                                       or getattr(self.main_graph, 'd2tfigpreamble', '%')
+            or getattr(self.main_graph, 'd2tfigpreamble', '%')
         variables['<<figpostamble>>'] = self.options.get('figpostamble', '') \
-                                        or getattr(self.main_graph, 'd2tfigpostamble', '')
+            or getattr(self.main_graph, 'd2tfigpostamble', '')
         variables['<<graphstyle>>'] = self.options.get('graphstyle', '') \
-                                      or getattr(self.main_graph, 'd2tgraphstyle', '')
+            or getattr(self.main_graph, 'd2tgraphstyle', '')
         variables['<<margin>>'] = self.options.get('margin', '0pt')
         variables['<<startpreprocsection>>'] = variables['<<endpreprocsection>>'] = ''
         variables['<<startoutputsection>>'] = variables['<<endoutputsection>>'] = ''
@@ -745,7 +738,7 @@ class DotConvBase(object):
         if text is None or text.strip() == '\\N':
             if not isinstance(drawobj, dotparsing.DotEdge):
                 text = getattr(drawobj, 'name', None) or \
-                       getattr(drawobj, 'graph_name', '')
+                    getattr(drawobj, 'graph_name', '')
                 text = text.replace("\\\\", "\\")
             else:
                 text = ''
@@ -1041,7 +1034,7 @@ class TeXDimProc:
         logfilename = os.path.splitext(self.tempfilename)[0] + '.log'
         tmpdir = os.getcwd()
         os.chdir(os.path.split(logfilename)[0])
-        self.tempfilename=os.path.abspath(os.path.realpath(self.tempfilename)) # get path latex can intepret
+        self.tempfilename = os.path.abspath(os.path.realpath(self.tempfilename))  # get path latex can interpret
         if self.options.get('usepdflatex'):
             command = 'pdflatex -interaction=nonstopmode "%s"' % self.tempfilename
         else:
@@ -1049,7 +1042,7 @@ class TeXDimProc:
         log.debug('Running command: %s' % command)
 
         p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=(sys.platform != 'win32'))
-        (stdout, stderr) = (p.stdout, p.stderr)
+        stdout, stderr = (p.stdout, p.stderr)
         try:
             data = stdout.read()
             log.debug("stdout from latex\n %s", data)
@@ -1064,11 +1057,11 @@ class TeXDimProc:
             stderr.close()
         p.kill()
         p.wait()
-        
+
         if sys.platform == "win32":
-            logFileEncoding='ANSI'
+            logFileEncoding = 'ANSI'
         else:
-            logFileEncoding='utf8'
+            logFileEncoding = 'utf8'
         with open(logfilename, 'r', encoding=logFileEncoding) as f:
             logdata = f.read()
 
@@ -1083,6 +1076,5 @@ class TeXDimProc:
             return
 
         c = 1.0 / 4736286
-        self.texdims = {}
         self.texdimlist = [(float(i[1]) * c, float(i[2]) * c, float(i[3]) * c) for i in texdimdata]
         self.texdims = dict(zip(self.snippets_id, self.texdimlist))

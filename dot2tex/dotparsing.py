@@ -12,14 +12,16 @@ __version__ = '2.12.dev'
 __author__ = ['Michael Krause', 'Ero Carrera', 'Kjell Magne Fauske']
 __license__ = 'MIT'
 
-import re
 import itertools
-import os
 import logging
-import string
-
+import os
 import pyparsing
-from pyparsing import (Literal, CaselessLiteral, Word, OneOrMore, Forward, Group, Optional, Combine, restOfLine,
+import re
+import string
+import sys
+
+from pyparsing import (Literal, CaselessLiteral, Word, OneOrMore, Forward,
+                       Group, Optional, Combine, restOfLine,
                        cStyleComment, nums, alphanums,
                        ParseException, CharsNotIn, Suppress, Regex, removeQuotes)
 from pyparsing import __version__ as pyparsing_version
@@ -38,14 +40,13 @@ log = logging.getLogger("dot2tex")
 
 
 def needs_quotes(s):
-    """Checks whether a string is a dot language ID.
+    """Check whether a string is a dot language ID.
 
     It will check whether the string is solely composed
     by the characters allowed in an ID or not.
     If the string is one of the reserved keywords it will
     need quotes too.
     """
-
     if s in dot_keywords:
         return True
 
@@ -62,29 +63,23 @@ def needs_quotes(s):
                 res = id_re_html.match(s)
             pass
 
-            ##                if not res:
-            ##                    res = id_re_with_port.match(s)
+            #                if not res:
+            #                    res = id_re_with_port.match(s)
 
-    if not res:
-        return True
-
-    return False
+    return not res
 
 
 def quote_if_necessary(s):
     if not isinstance(s, str):
         return s
-    tmp = s
-    if needs_quotes(tmp):
-        tmp = '"%s"' % s  # .replace('"','\\"')
+    tmp = ('"%s"' % s) if needs_quotes(s) else s
     tmp = tmp.replace('<<', '<')
-    tmp = tmp.replace('>>', '>')
-    return tmp
+    return tmp.replace('>>', '>')
 
 
 def flatten(lst):
     for elem in lst:
-        if type(elem) in (tuple, list):
+        if isinstance(elem, (tuple, list)):
             for i in flatten(elem):
                 yield i
         else:
@@ -106,9 +101,9 @@ def windows(iterable, length=2, overlap=0, padding=True):
 
 
 def nsplit(seq, n=2):
-    """Split a sequence into pieces of length n
+    """Split a sequence into pieces of length n.
 
-    If the length of the sequence isn't a multiple of n, the rest is discarded.
+    If the length of the sequence is not a multiple of n, the rest is discarded.
     Note that nsplit will strings into individual characters.
 
     Examples:
@@ -121,7 +116,7 @@ def nsplit(seq, n=2):
     >>> nsplit('aabbcc',n=4)
     [('a', 'a', 'b', 'b')]
     """
-    return [xy for xy in zip(*[iter(seq)] * n)]
+    return list(zip(*[iter(seq)] * n))
 
 
 # The following function is from the pydot project
@@ -133,9 +128,8 @@ def __find_executables(path):
     If any of the executables are found, it will return a dictionary
     containing the program names as keys and their paths as values.
 
-    Otherwise returns None
+    Otherwise returns ``None``.
     """
-
     success = False
     progs = {'dot': '', 'twopi': '', 'neato': '', 'circo': '', 'fdp': ''}
 
@@ -166,11 +160,7 @@ def __find_executables(path):
 
                 success = True
 
-    if success:
-        return progs
-
-    else:
-        return None
+    return progs if success else None
 
 
 # The following function is from the pydot project
@@ -201,7 +191,7 @@ def find_graphviz():
 
     # Method 1 (Windows only)
     #
-    if os.sys.platform == 'win32':
+    if sys.platform == 'win32':
         try:
             import win32api
             import win32con
@@ -227,7 +217,7 @@ def find_graphviz():
             #
             log.debug('The win32api is not installed')
             pass
-        except:
+        except Exception:
             log.debug('Failed to access the registry key')
 
     # Method 2 (Linux, Windows etc)
@@ -240,7 +230,7 @@ def find_graphviz():
 
     # Method 3 (Windows only)
     #
-    if os.sys.platform == 'win32':
+    if sys.platform == 'win32':
         # Try and work out the equivalent of "C:\Program Files" on this
         # machine (might be on drive D:, or in a different language)
         #
@@ -378,7 +368,7 @@ class DotDataParser(object):
     def define_dot_parser(self):
         """Define dot grammar
 
-        Based on the grammar http://www.graphviz.org/doc/info/lang.html
+        Based on the grammar https://www.graphviz.org/doc/info/lang.html
         """
         # punctuation
         colon = Literal(":")
@@ -407,7 +397,7 @@ class DotDataParser(object):
         node_ = CaselessLiteral("node")
         edge_ = CaselessLiteral("edge")
 
-        punctuation_ = "".join([c for c in string.punctuation if c not in '_']) + string.whitespace
+        punctuation_ = "".join(c for c in string.punctuation if c not in '_') + string.whitespace
         # token definitions
 
         identifier = Word(alphanums + "_").setName("identifier")
@@ -428,9 +418,9 @@ class DotDataParser(object):
         try:
             html_text = pyparsing.nestedExpr(opener, closer,
                                              ((CharsNotIn(
-                                                     opener + closer).setParseAction(lambda t: t[0]))
+                                                 opener + closer).setParseAction(lambda t: t[0]))
                                               )).setParseAction(parse_html)
-        except:
+        except Exception:
             log.debug('nestedExpr not available.')
             log.warning('Old version of pyparsing detected. Version 1.4.8 or '
                         'later is recommended. Parsing of html labels may not '
@@ -443,8 +433,6 @@ class DotDataParser(object):
         ID = (alphastring_ | html_text | float_number |
               quoted_string |  # .setParseAction(strip_quotes) |
               identifier).setName("ID")
-
-
 
         righthand_id = (float_number | ID).setName("righthand_id")
 
@@ -477,7 +465,7 @@ class DotDataParser(object):
         edge_stmt = edge_point + edgeRHS + Optional(attr_list)
 
         subgraph = (Optional(subgraph_, '') + Optional(ID, '') + Group(graph_stmt)).setName("subgraph").setResultsName(
-                'ssubgraph')
+            'ssubgraph')
 
         edge_point <<= (subgraph | graph_stmt | node_id)
 
@@ -590,9 +578,9 @@ class DotDataParser(object):
         try:
             try:
                 self.dotparser.parseWithTabs()
-            except:
+            except Exception:
                 log.warning('Old version of pyparsing. Parser may not work correctly')
-            if os.sys.version_info[0] >= 3 and isinstance(data, bytes):
+            if isinstance(data, bytes):
                 data = data.decode()
             ndata = data.replace('\\\n', '')
             # lines = data.splitlines()
@@ -613,7 +601,7 @@ class DotDataParser(object):
         try:
             try:
                 self.dotparser.parseWithTabs()
-            except:
+            except Exception:
                 log.warning('Old version of pyparsing. Parser may not work correctly')
 
             tokens = self.dotparser.parseString(data)
@@ -634,9 +622,9 @@ class DotDefaultAttr(object):
         self.attr = kwds
 
     def __str__(self):
-        attrstr = ",".join(["%s=%s" % \
-                            (quote_if_necessary(key), quote_if_necessary(val)) \
-                            for key, val in self.attr.items()])
+        attrstr = ",".join("%s=%s" %
+                           (quote_if_necessary(key), quote_if_necessary(val))
+                           for key, val in self.attr.items())
         if attrstr:
             attrstr = "[%s]" % attrstr
             return "%s%s;\n" % (self.element_type, attrstr)
@@ -665,9 +653,9 @@ class DotNode(object):
         self.attr.update(kwds)
 
     def __str__(self):
-        attrstr = ",".join(["%s=%s" % \
-                            (quote_if_necessary(key), quote_if_necessary(val)) \
-                            for key, val in self.attr.items()])
+        attrstr = ",".join("%s=%s" %
+                           (quote_if_necessary(key), quote_if_necessary(val))
+                           for key, val in self.attr.items())
         if attrstr:
             attrstr = "[%s]" % attrstr
         return "%s%s;\n" % (quote_if_necessary(self.name), attrstr)
@@ -678,13 +666,13 @@ class DotNode(object):
     def __eq__(self, other):
         try:
             return self.name == other
-        except:
+        except (TypeError, ValueError, NotImplementedError):
             return False
 
     def __ne__(self, other):
         try:
             return self.name != other
-        except:
+        except (TypeError, ValueError, NotImplementedError):
             return False
 
     def __getattr__(self, name):
@@ -746,8 +734,8 @@ class DotGraph(object):
             node = DotNode(str(node), **kwds)
         n = node.name
 
-        ##        if n not in self.adj:
-        ##            self.adj[n]={}
+        #        if n not in self.adj:
+        #            self.adj[n]={}
         if n in self._allnodes:
             self._allnodes[n].attr.update(kwds)
         else:
@@ -758,16 +746,16 @@ class DotGraph(object):
             self._nodes[n] = node
 
             # Todo: Adding a node to a subgraph should insert it in parent graphs
-        ##        parent = self.parent
-        ##        if parent:
-        ##            print("Parent %s " % parent.name)
-        ##        while parent:
-        ##            print("Parent %s " % parent.name)
-        ##            if n not in parent._nodes:
-        ##                parent._nodes[n] = node
-        ##                parent = parent.parent
-        ##            else:
-        ##                parent = None
+        #        parent = self.parent
+        #        if parent:
+        #            print("Parent %s " % parent.name)
+        #        while parent:
+        #            print("Parent %s " % parent.name)
+        #            if n not in parent._nodes:
+        #                parent._nodes[n] = node
+        #                parent = parent.parent
+        #            else:
+        #                parent = None
 
         return node
 
@@ -777,15 +765,15 @@ class DotGraph(object):
         edge = DotEdge(u, v, self.directed, srcport, dstport, **self.default_edge_attr)
         edge.attr.update(kwds)
 
-        ##        if not self.strict:
-        ##            self.adj[u][v]=self.adj[u].get(v,[])+ [edge]
-        ##            if not self.directed:
-        ##                self.adj[v][u]=self.adj[v].get(u,[])+ [edge]
-        ##
-        ##        else:
-        ##            self.adj[u][v]=edge
-        ##            if not self.directed:
-        ##                self.adj[v][u]=edge
+        #        if not self.strict:
+        #            self.adj[u][v]=self.adj[u].get(v,[])+ [edge]
+        #            if not self.directed:
+        #                self.adj[v][u]=self.adj[v].get(u,[])+ [edge]
+        #
+        #        else:
+        #            self.adj[u][v]=edge
+        #            if not self.directed:
+        #                self.adj[v][u]=edge
 
         edgekey = (u.name, v.name)
 
@@ -797,11 +785,11 @@ class DotGraph(object):
                     self._edges[edgekey].append(edge)
                 edgs.append(edge)
 
-                ##            else:
-                ##                edgs[0].attributes.update(edge.attributes)
-                ##                return edgs[0]
+                #            else:
+                #                edgs[0].attributes.update(edge.attributes)
+                #                return edgs[0]
         else:
-            ##            edge.parent = edge_parent
+            #            edge.parent = edge_parent
             # edge.attr.update(self.default_edge_attr)
             self._alledges[edgekey] = [edge]
             self._edges[edgekey] = [edge]
@@ -836,31 +824,27 @@ class DotGraph(object):
     def add_default_graph_attr(self, **kwds):
         self.default_graph_attr.update(kwds)
 
-    ##            #nodecls = self._allnodes[name]
-    ##            #nodeparent = nodecls.parent
-    ##
-    ##            parent = self.parent
-    ##            if parent and (not (nodeparent == self)):
-    ##                while parent:
-    ##
-    ##                    if name in parent._nodes:
-    ##
-    ##                        del parent._nodes[name]
-    ##                        # changing a node parent may trigger a change in
-    ##                        # edge parent
-    ##                        nodecls.parent = self
-    ##                        parent = None
-    ##                        self._nodes[name] = nodecls
-    ##                    else:
-    ##                        parent = parent.parent
-    ##
-    ##
-    ##
-    ##
-    ##        else:
-    ##            nodecls.parent = self
-    ##            self._allnodes[name]=nodecls
-    ##            self._nodes[name] = nodecls
+    #            #nodecls = self._allnodes[name]
+    #            #nodeparent = nodecls.parent
+    #
+    #            parent = self.parent
+    #            if parent and (not (nodeparent == self)):
+    #                while parent:
+    #
+    #                    if name in parent._nodes:
+    #
+    #                        del parent._nodes[name]
+    #                        # changing a node parent may trigger a change in
+    #                        # edge parent
+    #                        nodecls.parent = self
+    #                        parent = None
+    #                        self._nodes[name] = nodecls
+    #                    else:
+    #                        parent = parent.parent
+    #        else:
+    #            nodecls.parent = self
+    #            self._allnodes[name]=nodecls
+    #            self._nodes[name] = nodecls
 
     def delete_node(self, node):
         if isinstance(node, DotNode):
@@ -870,7 +854,7 @@ class DotGraph(object):
         try:
             del self._nodes[name]
             del self._allnodes[name]
-        except:
+        except KeyError:
             raise DotParsingException("Node %s does not exists" % name)
 
     def get_node(self, nodename):
@@ -880,37 +864,33 @@ class DotGraph(object):
         """
         return self._allnodes.get(nodename, None)
 
-    ##    def add_edge(self, src, dst,attributes={},**kwds):
-    ##        src = self.add_node(src)
-    ##        dst = self.add_node(dst)
-    ##        edge = DotEdge(src,dst,self,attributes=attributes,**kwds)
-    ##        edgekey = (src.name,dst.name)
-    ##        # Need to set correct edge parent
-    ##        # The edge should belong to the node with the lowest level number
-    ##        if src.parent.level <= dst.parent.level:
-    ##            edge_parent = src.parent
-    ##        else:
-    ##            edge_parent = dst.parent
-    ##
-    ##        if edgekey in self._alledges:
-    ##            edgs = self._alledges[edgekey]
-    ##            if not self.strict:
-    ##                edge.parent = edge_parent
-    ##                edgs.append(edge)
-    ##
-    ##            else:
-    ##                edgs[0].attributes.update(edge.attributes)
-    ##                return edgs[0]
-    ##        else:
-    ##            edge.parent = edge_parent
-    ##
-    ##            self._alledges[edgekey] = [edge]
-    ##            self._edges[edgekey] = [edge]
-    ##
-    ##
-    ##
-    ##
-    ##        return edge
+    #    def add_edge(self, src, dst,attributes={},**kwds):
+    #        src = self.add_node(src)
+    #        dst = self.add_node(dst)
+    #        edge = DotEdge(src,dst,self,attributes=attributes,**kwds)
+    #        edgekey = (src.name,dst.name)
+    #        # Need to set correct edge parent
+    #        # The edge should belong to the node with the lowest level number
+    #        if src.parent.level <= dst.parent.level:
+    #            edge_parent = src.parent
+    #        else:
+    #            edge_parent = dst.parent
+    #
+    #        if edgekey in self._alledges:
+    #            edgs = self._alledges[edgekey]
+    #            if not self.strict:
+    #                edge.parent = edge_parent
+    #                edgs.append(edge)
+    #
+    #            else:
+    #                edgs[0].attributes.update(edge.attributes)
+    #                return edgs[0]
+    #        else:
+    #            edge.parent = edge_parent
+    #
+    #            self._alledges[edgekey] = [edge]
+    #            self._edges[edgekey] = [edge]
+    #        return edge
 
     def add_subgraph(self, subgraph, **kwds):
         if isinstance(subgraph, DotSubGraph):
@@ -960,10 +940,11 @@ class DotGraph(object):
         s = ""
         padding = self.padding
         if len(self.allitems) > 0:
-            grstr = "".join(["%s%s" % (padding, n) for n in map(str, flatten(self.allitems))])
-            attrstr = ",".join(["%s=%s" % \
-                                (quote_if_necessary(key), quote_if_necessary(val)) \
-                                for key, val in self.attr.items()])
+            grstr = "".join("%s%s" % (padding, n)
+                            for n in map(str, flatten(self.allitems)))
+            attrstr = ",".join("%s=%s" %
+                               (quote_if_necessary(key), quote_if_necessary(val))
+                               for key, val in self.attr.items())
             if attrstr:
                 attrstr = "%sgraph [%s];" % (padding, attrstr)
             if not isinstance(self, DotSubGraph):
@@ -978,16 +959,17 @@ class DotGraph(object):
             else:
                 return "%s %s{\n%s\n%s\n%s}" % ('subgraph', self.get_name(), grstr, attrstr, padding)
 
-        subgraphstr = "\n".join(["%s%s" % (padding, n) for n in map(str, self.subgraphs)])
+        subgraphstr = "\n".join("%s%s" % (padding, n)
+                                for n in map(str, self.subgraphs))
 
-        nodestr = "".join(["%s%s" % (padding, n)
-                           for n in map(str, self._nodes.values())])
-        edgestr = "".join(["%s%s" % (padding, n)
-                           for n in map(str, flatten(self.edges.values()))])
+        nodestr = "".join("%s%s" % (padding, n)
+                          for n in map(str, self._nodes.values()))
+        edgestr = "".join("%s%s" % (padding, n)
+                          for n in map(str, flatten(self.edges.values())))
 
-        attrstr = ",".join(["%s=%s" %
-                            (quote_if_necessary(key), quote_if_necessary(val))
-                            for key, val in self.attr.items()])
+        attrstr = ",".join("%s=%s" %
+                           (quote_if_necessary(key), quote_if_necessary(val))
+                           for key, val in self.attr.items())
         if attrstr:
             attrstr = "%sgraph [%s];" % (padding, attrstr)
         if not isinstance(self, DotSubGraph):
@@ -1022,14 +1004,15 @@ class DotEdge(object):
         self.attr.update(kwds)
 
     def __str__(self):
-        attrstr = ",".join(["%s=%s" % \
-                            (quote_if_necessary(key), quote_if_necessary(val)) \
-                            for key, val in self.attr.items()])
+        attrstr = ",".join("%s=%s" %
+                           (quote_if_necessary(key), quote_if_necessary(val))
+                           for key, val in self.attr.items())
         if attrstr:
             attrstr = "[%s]" % attrstr
-        return "%s%s %s %s%s %s;\n" % (quote_if_necessary(self.src.name), \
-                                       self.src_port, self.conn, \
-                                       quote_if_necessary(self.dst.name), self.dst_port, attrstr)
+        return "%s%s %s %s%s %s;\n" % (quote_if_necessary(self.src.name),
+                                       self.src_port, self.conn,
+                                       quote_if_necessary(self.dst.name),
+                                       self.dst_port, attrstr)
 
     def get_source(self):
         return self.src.name
