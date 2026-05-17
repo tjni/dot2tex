@@ -4,7 +4,7 @@
 :Tags: PGF
 
 Examples of PGF/TikZ snake line styles. See chapter 14.2 in the PGF/TikZ 
-manual for all availale snake styles. Note that the snake styles requires
+manual for all available snake styles. Note that the snake styles requires
 line operations, so you have to use the ``-s`` option.
 
 Generated with::
