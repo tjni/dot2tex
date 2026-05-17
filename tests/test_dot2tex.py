@@ -192,11 +192,11 @@ class ErrorHandlingTest(unittest.TestCase):
     def test_parse_error(self):
         graph = "graph {a-b]"
         parser = dot2tex.dotparsing.DotDataParser()
-        self.assertRaises(dot2tex.ParseException, parser.parse_dot_data, graph)
+        self.assertRaises(ParseException, parser.parse_dot_data, graph)
 
     def test_module_parse_error(self):
         graph = "graph {a-b]"
-        self.assertRaises(dot2tex.ParseException, dot2tex.dot2tex, graph)
+        self.assertRaises(ParseException, dot2tex.dot2tex, graph)
 
     def test_no_input_file(self):
         graph = r"\input{dymmy.dot}"
