@@ -184,19 +184,19 @@ def parse_drawstring(drawstring):
     return cmdlist, stat
 
 
-def get_graphlist(gg, l=None):
+def get_graphlist(gg, ell=None):
     """Traverse a graph with subgraphs and return them as a list"""
-    if not l:
-        l = []
+    if not ell:
+        ell = []
         outer = True
     else:
         outer = False
-    l.append(gg)
+    ell.append(gg)
     if gg.get_subgraphs():
         for g in gg.get_subgraphs():
-            get_graphlist(g, l)
+            get_graphlist(g, ell)
     if outer:
-        return l
+        return ell
 
 
 def get_drawobj_lblstyle(drawobj, extra_styles=None):
