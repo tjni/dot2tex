@@ -278,7 +278,7 @@ class DotConvBase:
             edge = '--'
         return "  %% Edge: %s %s %s\n" % (src, edge, dst)
 
-    def set_color(self, node):
+    def set_color(self, drawop):
         return ""
 
     def set_style(self, drawop):
