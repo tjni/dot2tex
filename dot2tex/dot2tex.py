@@ -327,7 +327,7 @@ def main(run_as_module=False, dotdata=None, options=None):
             try:
                 log.debug('Attempting to read data from %s', options.inputfile)
                 dotdata = load_dot_file(options.inputfile)
-            except:
+            except (OSError, FileNotFoundError):
                 if options.debug:
                     log.exception('Failed to load file %s', options.inputfile)
                 else:
@@ -346,7 +346,7 @@ def main(run_as_module=False, dotdata=None, options=None):
         log.info('Found \\input{%s}', filename)
         try:
             dotdata = load_dot_file(filename)
-        except:
+        except (OSError, FileNotFoundError):
             if options.debug:
                 log.exception('Failed to load \\input{%s}', filename)
             else:
