@@ -42,6 +42,7 @@ class _NullHandler(logging.Handler):
     def emit(self, record):
         pass
 
+
 _h = _NullHandler()
 logging.getLogger("dot2tex").addHandler(_h)
 
@@ -58,7 +59,3 @@ def dot2tex(dotsource, **kwargs):
 
     """
     return d2t.convert_graph(dotsource, **kwargs)
-
-  
-
-
