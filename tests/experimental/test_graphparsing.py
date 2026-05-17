@@ -1,6 +1,11 @@
 """Test that output from dotparsing and dot is the same"""
 
-import re, os, shutil, glob, sys, time
+import re
+import os
+import shutil
+import glob
+import sys
+import time
 
 from PIL import ImageChops, Image
 
@@ -17,7 +22,7 @@ DOT_DIR = join(TESTFILES_PATH, 'dpdots')
 
 import logging
 
-# intitalize logging module
+# initialize logging module
 log = logging.getLogger("test_graphparser")
 console = logging.StreamHandler()
 console.setLevel(logging.WARNING)
