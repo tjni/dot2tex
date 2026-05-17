@@ -451,7 +451,7 @@ The resulting graph now has correctly sized nodes and edge labels:
 .. figure:: img/preproc1b.*
    :alt: Graph with preprocessed labels
 
-Modifying node sizes using the ``widht/height`` and ``margin`` attributes can be a bit counterintuitive. A few examples will hopefully make it clearer:
+Modifying node sizes using the ``width/height`` and ``margin`` attributes can be a bit counterintuitive. A few examples will hopefully make it clearer:
 
 ::
 
