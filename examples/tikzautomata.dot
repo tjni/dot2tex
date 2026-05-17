@@ -3,7 +3,7 @@
 :Title: Automata
 :Tags: TikZ, topath, tikzedgelabels
 
-An example of how to use TikZ' automata libray and to paths to
+An example of how to use TikZ' automata library and to paths to
 create a pretty state machine. 
 
 Generated with::
