@@ -323,7 +323,7 @@ Released 2007-04-23
 
 Released 2006-10-22
 
-- Added a few more helpfull error messages.
+- Added a few more helpful error messages.
 - Added the ``--figonly`` option.
 - The ``$`` character is now properly escaped.
 - Fixed a few issues when converting between Graphviz to backend styles.
@@ -331,7 +331,7 @@ Released 2006-10-22
 - Added more intelligent detection of xdot input. Older versions of
   Graphviz does not include the ``xdotversion`` attribute in the
   output.
-- Styles are now transfered to the PSTricks and PGF/TikZ backend.
+- Styles are now transferred to the PSTricks and PGF/TikZ backend.
 - Added a force straight line option to avoid using curves for
   straight edges.
 - PGF/TikZ is now set as the default backend.
