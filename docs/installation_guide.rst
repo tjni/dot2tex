@@ -50,7 +50,7 @@ Download a zip or a tarball from the download_ page. Unpack the file to a direct
 
     $ python setup.py install
 
-This will create a dot2tex module in your Python modue directory and a wrapper script in your ``SCRIPTS`` directory. Note that a few warnings will be displayed. You can safely ignore them. The warnings are shown because there is some extra information in the ``setup.py`` file that distutils does not understand.
+This will create a dot2tex module in your Python module directory and a wrapper script in your ``SCRIPTS`` directory. Note that a few warnings will be displayed. You can safely ignore them. The warnings are shown because there is some extra information in the ``setup.py`` file that distutils does not understand.
 
 
 Development version
