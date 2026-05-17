@@ -3,7 +3,7 @@
 :Tags: PGF, Preproc
 
 This example graph was contributed by Teresa Gomez-Diaz, and shows
-that the ``texlbl`` attriute can contain arbitrary LaTeX markup.
+that the ``texlbl`` attribute can contain arbitrary LaTeX markup.
 
 Generated with::
 
