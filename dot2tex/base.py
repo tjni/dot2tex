@@ -281,7 +281,7 @@ class DotConvBase:
     def set_color(self, node):
         return ""
 
-    def set_style(self, node):
+    def set_style(self, drawop):
         return ""
 
     def draw_edge(self, edge):
