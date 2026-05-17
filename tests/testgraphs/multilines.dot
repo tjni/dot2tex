@@ -1,4 +1,4 @@
-/* Test multilineattributes and concatination */
+/* Test multilineattributes and concatenation */
 digraph G {
 	a [label="This is\
 a multiline\
