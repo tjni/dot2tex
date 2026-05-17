@@ -15,7 +15,7 @@ from PIL import ImageChops, Image
 from os.path import join, basename, normpath
 import logging
 
-# intialize logging module
+# initialize logging module
 log = logging.getLogger("test_graphparser")
 console = logging.StreamHandler()
 console.setLevel(logging.WARNING)
