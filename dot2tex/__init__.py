@@ -32,7 +32,6 @@ __author__ = 'Kjell Magne Fauske'
 __license__ = 'MIT'
 
 from . import dot2tex as d2t
-from pyparsing import ParseException
 
 __version__ = d2t.__version__
 
