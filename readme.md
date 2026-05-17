@@ -2,8 +2,7 @@ dot2tex - A Graphviz to LaTeX converter
 =======================================
 
 > [!WARNING]
-> This project is no longer being maintained. I have tried to find a new maintainer for the project with no luck. 
-> If you are interested, feel free to reach out. See https://github.com/xyz2tex/dot2tex/issues/58 for details.
+> This project is since May 2026 handled by the SageMath community.
 
 License: MIT (See LICENSE for details.)
 
@@ -20,13 +19,13 @@ Installation
 ============
 
 Before you install dot2tex you have to have a working Python environment
-installed on your system. Dot2tex works with Python 2.7 and Python 3. In addition
-you'll need the following modules:
+installed on your system. Dot2tex works with Python 3. In addition
+you will need the following modules:
 
 * [pyparsing](https://github.com/pyparsing/pyparsing). A recent version is required.
       Older version like for instance 1.3.2 does not work with dot2tex.
-* [preview](http://www.ctan.org/tex-archive/help/Catalogue/entries/preview.html)
-      A stand-alone part of the preview-latex/AUCTeX bundle.
+* [preview](https://ctan.org/pkg/preview)
+      A stand-alone part of the preview-latex bundle.
       Required for preprocessing graphs with LaTeX.
 * PGF/TikZ 2.0 or later required.
 
@@ -52,7 +51,7 @@ Binary packages
 
 Binary packages are available for [Debian][] and [OpenSUSE][].
 
-[Debian]: http://packages.qa.debian.org/d/dot2tex.html
+[Debian]: https://packages.qa.debian.org/d/dot2tex.html
 [OpenSUSE]: http://download.opensuse.org/repositories/home:/jimfunk/
 
 From source
