@@ -24,14 +24,13 @@ def escape_texchars(string):
     >>> escape_texchars('%{}_^\\$')
     '\\%\\{\\}\\_\\^{}$\\backslash$\\$'
     """
-    return "".join([charmap.get(c, c) for c in string])
+    return "".join(charmap.get(c, c) for c in string)
 
 
 def tikzify(s):
     if s.strip():
         return mreplace(s, r'\,:.()', '-+_*{}')
-    else:
-        return "d2tnn%i" % (len(s) + 1)
+    return "d2tnn%i" % (len(s) + 1)
 
 
 def nsplit(seq, n=2):
@@ -76,14 +75,11 @@ def replace_tags(template, tags, tagsreplace):
 
 
 def getboolattr(item, key, default):
-    if str(getattr(item, key, '')).lower() == 'true':
-        return True
-    else:
-        return False
+    return str(getattr(item, key, '')).lower() == 'true'
 
 
 def smart_float(number):
-    if type(number) is str: # handle newlines
+    if isinstance(number, str): # handle newlines
         number = number.strip('\\\r\n')
     number_as_string = "%s" % float(number)
     if 'e' in number_as_string:
