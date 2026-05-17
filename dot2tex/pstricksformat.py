@@ -212,7 +212,7 @@ class Dot2PSTricksConv(DotConvBase):
         self.color = ""
         return "{\n"
 
-    def end_graph(self, node):
+    def end_graph(self, graph):
         return "}\n"
 
     def draw_edge(self, edge):
