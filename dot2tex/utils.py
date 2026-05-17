@@ -102,22 +102,19 @@ class EndOfGraphElement:
         pass
 
 
-def get_all_graph_elements(graph, l=None):
+def get_all_graph_elements(graph, ell=None):
     """Return all nodes and edges, including elements in subgraphs"""
-    if not l:
-        l = []
+    if not ell:
+        ell = [graph]
         outer = True
-        l.append(graph)
     else:
         outer = False
     for element in graph.allitems:
+        ell.append(element)
         if isinstance(element, dotparsing.DotSubGraph):
-            l.append(element)
-            get_all_graph_elements(element, l)
-        else:
-            l.append(element)
+            get_all_graph_elements(element, ell)
 
     if outer:
-        return l
+        return ell
     else:
-        l.append(EndOfGraphElement())
+        ell.append(EndOfGraphElement())
