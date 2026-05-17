@@ -161,6 +161,8 @@ class Dot2PGFConv(DotConvBase):
                       "crow": "stealth reversed"}
 
     def __init__(self, options=None):
+        if options is None:
+            options = {}
         DotConvBase.__init__(self, options)
         if not self.template:
             if options.get('pgf118'):
