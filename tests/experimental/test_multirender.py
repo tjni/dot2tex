@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
+import subprocess
 import sys
 
-from os.path import join, basename, splitext, normpath, abspath
+from os.path import join, basename, splitext, normpath
 
 from string import Template
 import logging
@@ -33,28 +34,26 @@ DEST_DIR = BASE_DIR / 'tmp/'
 
 
 def runcmd(syscmd):
-    # err = os.system(syscmd)
-    sres = os.popen(syscmd)
-    resdata = sres.read()
-    err = sres.close()
+    result = subprocess.run(syscmd, text=True, capture_output=True)
+    err = result.returncode
     if err:
         log.warning('Failed to run command:\n%s', syscmd)
-        log.debug('Output:\n%s', resdata)
+        log.debug('Output:\n%s', result)
     return err
 
 
 def meps(filename):
     fn = splitext(filename)[0]
-    s = "latex -halt-on-error -interaction nonstopmode %s.tex" % fn
+    s = ["latex', '-halt-on-error', '-interaction nonstopmode %s.tex" % fn]
     err = runcmd(s)
     if err:
         return err
     if sys.platform == 'win32':
-        s = "dvips -Ppdf -G0 -D600 -E* -o%s.eps %s.dvi" % (fn, fn)
+        s = ["dvips", "-Ppdf", "-G0", "-D600", "-E*", "-o%s.eps %s.dvi" % (fn, fn)]
         err = runcmd(s)
         if err:
             return err
-        s = "epstool --bbox --copy --output %s_tmp.eps %s.eps" % (fn, fn)
+        s = ["epstool", "--bbox", "--copy", "--output %s_tmp.eps %s.eps" % (fn, fn)]
         err = runcmd(s)
         if err:
             return err
@@ -65,19 +64,19 @@ def meps(filename):
             os.remove("%s.log" % fn)
         # os.remove("%s.pgf" % fn)
 
-        except:
+        except OSError:
             raise
         os.rename("%s_tmp.eps" % fn, "%s.eps" % fn)
-        s = "epstopdf %s.eps" % fn
+        s = ["epstopdf", "%s.eps" % fn]
         err = runcmd(s)
     else:
-        s = "dvips %s.dvi" % fn
+        s = ["dvips", "%s.dvi" % fn]
         err = runcmd(s)
-        s = "ps2eps -B -f %s.ps" % fn
+        s = ["ps2eps", "-B", "-f", "%s.ps" % fn]
         err = runcmd(s)
         if err:
             return err
-        s = "epstopdf %s.eps" % fn
+        s = ["epstopdf", "%s.eps" % fn]
         err = runcmd(s)
 
     return err
@@ -114,9 +113,9 @@ def create_pdf(texfile, use_pdftex=True):
     else:
         fn = basename(texfile)
     if sys.platform == 'win32':
-        syscmd = 'texify --pdf --clean %s' % (fn)
+        syscmd = ['texify', '--pdf --clean %s' % (fn)]
     else:
-        syscmd = 'pdflatex -halt-on-error -interaction nonstopmode %s' % (fn)
+        syscmd = ['pdflatex', '-halt-on-error -interaction nonstopmode %s' % (fn)]
     err = runcmd(syscmd)
     return err
 
@@ -129,9 +128,9 @@ def create_original(dotfilename):
     destfile = normpath(join(DEST_DIR, splitext(basefn)[0]))
     cwd = os.getcwd()
     os.chdir(os.path.dirname(destfile))
-    syscmd = 'dot -Tps2 %s > %s.ps' % (dotfilename, destfile)
+    syscmd = ['dot', '-Tps2 %s > %s.ps' % (dotfilename, destfile)]
     err = runcmd(syscmd)
-    syscmd = 'ps2pdf %s.ps' % (destfile)
+    syscmd = ['ps2pdf', '%s.ps' % (destfile)]
     # os.remove("%s.ps" % destfile)
     err = runcmd(syscmd)
     os.chdir(cwd)
@@ -141,7 +140,7 @@ def create_original(dotfilename):
 def create_tikz(dotfilename):
     basefn = basename(dotfilename)
     destfile = normpath(join(DEST_DIR, splitext(basefn)[0])) + '_tikz'
-    syscmd = 'dot2tex -ftikz --crop %s > %s.tex' % (dotfilename, destfile)
+    syscmd = ['dot2tex', '-ftikz --crop %s > %s.tex' % (dotfilename, destfile)]
     err = runcmd(syscmd)
     cwd = os.getcwd()
     os.chdir(os.path.dirname(destfile))
@@ -154,7 +153,7 @@ def create_tikz(dotfilename):
 def create_pgf(dotfilename):
     basefn = basename(dotfilename)
     destfile = normpath(join(DEST_DIR, splitext(basefn)[0])) + '_pgf'
-    syscmd = 'dot2tex --crop %s > %s.tex' % (dotfilename, destfile)
+    syscmd = ['dot2tex', '--crop %s > %s.tex' % (dotfilename, destfile)]
     err = runcmd(syscmd)
     cwd = os.getcwd()
     os.chdir(os.path.dirname(destfile))
@@ -167,7 +166,7 @@ def create_pgf(dotfilename):
 def create_pst(dotfilename):
     basefn = basename(dotfilename)
     destfile = normpath(join(DEST_DIR, splitext(basefn)[0])) + '_pst'
-    syscmd = 'dot2tex -fpst %s > %s.tex' % (dotfilename, destfile)
+    syscmd = ['dot2tex', '-fpst', '%s > %s.tex' % (dotfilename, destfile)]
     err = runcmd(syscmd)
     cwd = os.getcwd()
     os.chdir(os.path.dirname(destfile))
@@ -317,11 +316,12 @@ class RenderTest(unittest.TestCase):
         for dotfile in self.cmplist:
             basefn = basename(dotfile)
             flist.append(normpath(join(splitext(basefn)[0])) + '_cmp.pdf')
-        s = "pdftk %s cat output testrenders.pdf dont_ask" % " ".join(flist)
+        s = ["pdftk", " ".join(flist), "cat",
+             "output", "testrenders.pdf", "dont_ask"]
         err = runcmd(s)
         self.assertFalse(err)
         if sys.platform == 'win32':
-            syscmd = "start %s" % 'testrenders.pdf'
+            syscmd = ["start", 'testrenders.pdf']
             err = runcmd(syscmd)
         print("Check testrenders.pdf manually")
 
